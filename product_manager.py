@@ -83,6 +83,7 @@ class ProductManager:
         if product is None:
             print("상품을 찾을 수 없음")
             return
+        return Product
 
     # 상품 추가
     def add_products(self):
@@ -108,15 +109,7 @@ class ProductManager:
             print("카테고리 입력")
             return
 
-        product = Product(
-            Product(
-                name,
-                price,
-                category,
-                False,
-                {},
-            )
-        )
+        product = Product(name, price, category, False, {})
         self.products.append(product)
         print(f"{name}이 상품으로 추가됨")
 
@@ -248,7 +241,7 @@ class ProductManager:
                 if product.sold_out:
                     print(f"{i}. {product.name} - 품절")
                 else:
-                    print(f"{i}. {product.name} - {product.price:,}원")
+                    print(f"{i}. {product.name} - {product.price}원")
 
                     if product.options:
                         print("   옵션:", end=" ")

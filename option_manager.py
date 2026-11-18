@@ -4,27 +4,27 @@ class OptionManager:
 
     # 옵션 선택
     def select_option(self, product):
-        self.select_options = []
+        self.selected_options = []
         if not product.options:
             print("옵션이 존재하지 않음")
-            return self.select_options
+            return self.selected_options
         print(f"\n-{product.name} 옵션 선택-")
-        option_names = list(product.options.key())
-        for i, option_name in enumerate(option_names):
-            print(f"({i + 1}.{option_name} + {product.options[option_name]}원)")
+        option_names = list(product.options.keys())
+        for i, option_name in enumerate(option_names, 1):
+            print(f"({i}. {option_name} + {product.options[option_name]}원)")
         print("0. 선택 완료")
         while True:
             try:
                 choice = int(input("추가할 옵션 번호 선택 : ").strip())
-                if choice < 0 or choice > len(option_name):
+
+                if choice < 0 or choice > len(option_names):
                     print("올바른 번호 입력")
                     continue
-
                 if choice == 0:
                     break
-                option_name = option_name[choice - 1]
-                self.select_options.append(option_name)
-                print(f"{option_name} 추가")
+                selected_option = option_names[choice - 1]
+                self.selected_options.append(selected_option)
+                print(f"{selected_option} 추가")
                 print(f"현재 선택 옵션: {self.selected_options}")
             except ValueError:
                 print("숫자를 입력하세요.")
@@ -67,4 +67,24 @@ class OptionManager:
         if not product.options:
             print("옵션이 존재하지 않음")
             return
-        # 미완성
+        print("현재 옵션")
+        option_names = list(product.options.keys())
+        for i, option_name in enumerate(option_names, 1):
+            print(f"{i}. {option_name} (+{product.options[option_name]}원)")
+        print("0. 삭제 취소")
+
+        while True:
+            try:
+                choice = int(input("삭제할 옵션 번호 선택 : ").strip())
+                if choice < 0 or choice > len(option_names):
+                    print("올바른 번호 입력")
+                    continue
+                if choice == 0:
+                    print("옵션 삭제를 취소")
+                    return
+                option_name = option_names[choice - 1]
+                del product.options[option_name]
+                print(f"{option_name} 옵션이 삭제")
+                return
+            except ValueError:
+                print("숫자를 입력")

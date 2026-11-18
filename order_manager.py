@@ -30,19 +30,37 @@ class OrderManager:
         return self.orders
 
     # 주문 정보 파일 저장
-    def save_orders(self, filename):
-        with open(filename, "w", encoding="utf-8-sig", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(["order_id", "order_time", "products", "total_price"])
-            for order in self.orders:
-                writer.writerow(
-                    [
-                        order.order_id,
-                        order.order_time,
-                        order.products,
-                        order.total_price,
-                    ]
-                )
+    def save_orders(self, filename, orders_to_save):
+        try:
+            with open(filename, "w", encoding="utf-8-sig", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["order_id", "order_time", "products", "total_price"])
+                for order in orders_to_save:
+                    writer.writerow(
+                        [
+                            order.order_id,
+                            order.order_time,
+                            order.products,
+                            order.total_price,
+                        ]
+                    )
+            return True
+        except OSError:
+            print("파일 저장 실패")
+
+    # 주문 생성
+    # 주문 생성
+    def create_order(self, order_id, order_time, products, total_price):
+        order = Order(
+            order_id,
+            order_time,
+            products,
+            total_price,
+        )
+
+        self.orders.append(order)
+
+        return order
 
     # 다음 주문 번호
     def get_next_order_id(self, order_file, sales_file="data/sales.csv"):
@@ -95,50 +113,72 @@ class OrderManager:
     # 주문 완료 처리
     def complete_order(self, order_id, order_file, sales_file):
         orders = self.load_order(order_file)
-        target_order = next(
-            (order for order in orders if order.order_id == order_id), None
-        )
+        target_order = None
+        for order in orders:
+            if order.order_id == order_id:
+                target_order = order
+                break
         if target_order is None:
             print("해당 주문을 찾을 수 없음")
             return False
         sales = self.load_order(sales_file)
-        if any(sale.order_id == order_id for sale in sales):
+        is_already_sold = False
+        for sale in sales:
+            if sale.order_id == order_id:
+                is_already_sold = True
+                break
+        if is_already_sold:
             print("이미 완료된 주문")
             return False
-        remaining_orders = [order for order in orders if order.order_id != order_id]
+        remaining_orders = []
+        for order in orders:
+            if order.order_id != order_id:
+                remaining_orders.append(order)
         sales.append(target_order)
-        try:
-            with open(sales_file, "w", encoding="utf-8-sig", newline="") as file:
-                writer = csv.writer(file)
-                writer.writerow(["order_id", "order_time", "products", "total_price"])
-                for sale in sales:
-                    writer.writerow(
-                        [
-                            sale.order_id,
-                            sale.order_time,
-                            sale.products,
-                            sale.total_price,
-                        ]
-                    )
-        except OSError:
-            print("매출 파일 저장 실패")
+        if not self.save_orders(sales_file, sales):
             return False
-        try:
-            with open(order_file, "w", encoding="utf-8-sig", newline="") as file:
-                writer = csv.writer(file)
-                writer.writerow(["order_id", "order_time", "products", "total_price"])
-                for order in remaining_orders:
-                    writer.writerow(
-                        [
-                            order.order_id,
-                            order.order_time,
-                            order.products,
-                            order.total_price,
-                        ]
-                    )
-        except OSError:
-            print("주문 파일 저장 실패")
+        if not self.save_orders(order_file, remaining_orders):
             return False
         self.orders = remaining_orders
         print(f"{order_id}번 주문 완료")
         return True
+
+    # 상품 정보 변환
+    def parse_order_products(self, products_text):
+        products = []
+        if not products_text:
+            return products
+        for product_text in products_text.split("|"):
+            parts = product_text.split(":")
+            if len(parts) < 2:
+                continue
+            name = parts[0]
+            try:
+                quantity = int(parts[1])
+                price = int(parts[2]) if len(parts) >= 3 else None
+            except ValueError:
+                continue
+            options = []
+            if len(parts) >= 4 and parts[3]:
+                for option_text in parts[3].split("+"):
+                    opt_parts = option_text.split("=")
+                    if len(opt_parts) != 2:
+                        continue
+                    try:
+                        options.append(
+                            {
+                                "name": opt_parts[0],
+                                "price": int(opt_parts[1]),
+                            }
+                        )
+                    except ValueError:
+                        continue
+            products.append(
+                {
+                    "name": name,
+                    "quantity": quantity,
+                    "price": price,
+                    "options": options,
+                }
+            )
+        return products
