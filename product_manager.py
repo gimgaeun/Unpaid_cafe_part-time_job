@@ -66,6 +66,24 @@ class ProductManager:
                     ]
                 )
 
+    # 상품 선택
+    def select_product(self):
+        available_products = [
+            product for product in self.products if not product.sold_out
+        ]
+        print("\n-상품 선택-")
+        if not available_products:
+            print("주문 가능한 상품 없음")
+            return
+        for i, product in enumerate(available_products, 1):
+            print(f"{i}.{product.name}-{product.price}원")
+        print("0. 취소")
+        name = input("상품명을 입력 : ").strip()
+        product = self.find_product(name)
+        if product is None:
+            print("상품을 찾을 수 없음")
+            return
+
     # 상품 추가
     def add_products(self):
         print("\n-상품 추가-")
@@ -108,6 +126,27 @@ class ProductManager:
             if product.name == product_name:
                 return product
         return None
+
+    # 상품 이름 수정
+    def update_product_name(self):
+        print("\n-상품 이름 수정-")
+        old_name = input("수정할 상품명 : ").strip()
+        product = self.find_product(old_name)
+        if product is None:
+            print("상품을 찾을 수 없음")
+            return
+        new_name = input("새로운 상품명 : ").strip()
+        if not new_name:
+            print("상품명을 입력해주세요.")
+            return
+        if old_name == new_name:
+            print("기존 상품명과 같습니다.")
+            return
+        if self.find_product(new_name) is not None:
+            print("이미 존재하는 상품명입니다.")
+            return
+        product.name = new_name
+        print(f"{old_name}이 {new_name}으로 변경")
 
     # 상품 가격 수정
     def update_product_price(self):

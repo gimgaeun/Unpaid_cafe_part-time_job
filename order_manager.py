@@ -27,6 +27,7 @@ class OrderManager:
         except FileNotFoundError:
             print()
             print(f"주문 데이터 파일을 찾을 수 없습니다: {filename}")
+        return self.orders
 
     # 주문 정보 파일 저장
     def save_orders(self, filename):
@@ -92,3 +93,52 @@ class OrderManager:
         print("====================")
 
     # 주문 완료 처리
+    def complete_order(self, order_id, order_file, sales_file):
+        orders = self.load_order(order_file)
+        target_order = next(
+            (order for order in orders if order.order_id == order_id), None
+        )
+        if target_order is None:
+            print("해당 주문을 찾을 수 없음")
+            return False
+        sales = self.load_order(sales_file)
+        if any(sale.order_id == order_id for sale in sales):
+            print("이미 완료된 주문")
+            return False
+        remaining_orders = [order for order in orders if order.order_id != order_id]
+        sales.append(target_order)
+        try:
+            with open(sales_file, "w", encoding="utf-8-sig", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["order_id", "order_time", "products", "total_price"])
+                for sale in sales:
+                    writer.writerow(
+                        [
+                            sale.order_id,
+                            sale.order_time,
+                            sale.products,
+                            sale.total_price,
+                        ]
+                    )
+        except OSError:
+            print("매출 파일 저장 실패")
+            return False
+        try:
+            with open(order_file, "w", encoding="utf-8-sig", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["order_id", "order_time", "products", "total_price"])
+                for order in remaining_orders:
+                    writer.writerow(
+                        [
+                            order.order_id,
+                            order.order_time,
+                            order.products,
+                            order.total_price,
+                        ]
+                    )
+        except OSError:
+            print("주문 파일 저장 실패")
+            return False
+        self.orders = remaining_orders
+        print(f"{order_id}번 주문 완료")
+        return True
