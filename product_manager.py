@@ -38,34 +38,33 @@ class ProductManager:
             print()
             print(f"상품 파일을 찾을 수 없습니다: {filename}")
 
-
-# 상품 정보 저장
-def save_products(self, filename):
-    with open(filename, "w", encoding="utf-8-sig", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(
-            [
-                "name",
-                "price",
-                "category",
-                "sold_out",
-                "options",
-            ]
-        )
-        for product in self.products:
-            options_text = []
-            for option_name, option_price in product.options.items():
-                options_text.append(f"{option_name}:{option_price}")
-            options_value = "|".join(options_text)
+    # 상품 정보 저장
+    def save_products(self, filename):
+        with open(filename, "w", encoding="utf-8-sig", newline="") as file:
+            writer = csv.writer(file)
             writer.writerow(
                 [
-                    product.name,
-                    product.price,
-                    product.category,
-                    1 if product.sold_out else 0,
-                    options_value,
+                    "name",
+                    "price",
+                    "category",
+                    "sold_out",
+                    "options",
                 ]
             )
+            for product in self.products:
+                options_text = []
+                for option_name, option_price in product.options.items():
+                    options_text.append(f"{option_name}:{option_price}")
+                options_value = "|".join(options_text)
+                writer.writerow(
+                    [
+                        product.name,
+                        product.price,
+                        product.category,
+                        1 if product.sold_out else 0,
+                        options_value,
+                    ]
+                )
 
     # 상품 추가
     def add_products(self):
@@ -102,3 +101,121 @@ def save_products(self, filename):
         )
         self.products.append(product)
         print(f"{name}이 상품으로 추가됨")
+
+    # 상품 찾기
+    def find_product(self, product_name):
+        for product in self.products:
+            if product.name == product_name:
+                return product
+        return None
+
+    # 상품 가격 수정
+    def update_product_price(self):
+        print("\n-상품 가격 수정-")
+        name = input("수정할 상품명 : ").strip()
+        product = self.find_product(name)
+        if product is None:
+            print("상품을 찾을 수 없음")
+            return
+        while True:
+            try:
+                price = int(input("새로운 가격 입력 : ").strip())
+                if price < 0:
+                    print("가격은 음수일 수 없음")
+                    continue
+                break
+            except ValueError:
+                print("가격은 숫자로 입력")
+        product.price = price
+        print(f"{product.name}의 가격이 {product.price}원으로 변경됨")
+
+    # 품절 상태 변경
+    def change_sold_out(self):
+        print("\n-품절 상태 변경-")
+        name = input("수정할 상품명 : ").strip()
+        product = self.find_product(name)
+        if product is None:
+            print("상품을 찾을 수 없음")
+            return
+        if product.sold_out:
+            product.sold_out = False
+            print(f"{product.name} 판매 상태로 변경")
+        else:
+            product.sold_out = True
+            print(f"{product.name} 품절 상태로 변경")
+
+    # 상품 삭제
+    def delete_product(self):
+        print("\n-상품 삭제-")
+        name = input("삭제할 상품명 : ").strip()
+        product = self.find_product(name)
+        if product is None:
+            print("상품을 찾을 수 없음")
+            return
+        confirm = input("정말 삭제? (y/n)")
+        if confirm.lower() != "y":
+            print("삭제를 취소")
+            return
+        self.products.remove(product)
+        print(f"{product.name} 삭제")
+
+    # 카테고리 값별 리스트 분류
+    def build_category_lists(self):
+        category_lists = {}
+        for product in self.products:
+            if product.category not in category_lists:
+                category_lists[product.category] = []
+            category_lists[product.category].append(product)
+        return category_lists
+
+    # 상품 가격 반환
+    def get_product_price(self, product):
+        return product.price
+
+    # 카테고리별 상품 정렬 (가격순)
+    def sort_products(self, category_lists):
+        for category in category_lists:
+            category_lists[category].sort(
+                key=self.get_product_price,
+                reverse=True,
+            )
+        return category_lists
+
+    # 카테고리별 필터링
+    def filter_category(self, category):
+        if category == "전체":
+            return self.products
+        filter_products = []
+        for product in self.products:
+            if product.category == category:
+                filter_products.append(product)
+        return filter_products
+
+    # 상품 목록 출력
+    def show_product_list(self):
+        print("\n-상품 목록-")
+
+        if not self.products:
+            print("상품이 없음")
+            return
+
+        category_lists = self.build_category_lists()
+        category_lists = self.sort_products(category_lists)
+
+        for category, category_products in category_lists.items():
+            print(f"\n[{category}]")
+
+            for i, product in enumerate(category_products, 1):
+                if product.sold_out:
+                    print(f"{i}. {product.name} - 품절")
+                else:
+                    print(f"{i}. {product.name} - {product.price:,}원")
+
+                    if product.options:
+                        print("   옵션:", end=" ")
+
+                        option_names = list(product.options.keys())
+
+                        print(", ".join(option_names))
+
+        print("====================")
