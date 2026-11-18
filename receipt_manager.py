@@ -9,37 +9,25 @@ class ReceiptManager:
             f"주문시간: {order.order_time}",
             "--------------------------------",
         ]
-
         for item in order.products:
             product = item.product
             product_name = product.name
             quantity = item.quantity
             options = item.options
-
             lines.append(f"{product_name} x {quantity}")
-
             if options:
                 option_names = []
-
                 for option_name in options:
                     option_price = product.options[option_name]
-
                     option_names.append(f"{option_name} (+{option_price}원)")
-
                 lines.append(f"  옵션: {', '.join(option_names)}")
-
                 item_price = product.price
-
                 for option_name in options:
                     item_price += product.options[option_name]
-
             else:
                 lines.append("  옵션: 없음")
-
                 item_price = product.price
-
             lines.append(f"  금액: {item_price * quantity}원")
-
         lines.extend(
             [
                 "--------------------------------",
@@ -49,7 +37,6 @@ class ReceiptManager:
                 "================================",
             ]
         )
-
         return "\n".join(lines)
 
     # 영수증 출력

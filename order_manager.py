@@ -49,7 +49,6 @@ class OrderManager:
             print("파일 저장 실패")
 
     # 주문 생성
-    # 주문 생성
     def create_order(self, order_id, order_time, products, total_price):
         order = Order(
             order_id,
@@ -57,9 +56,7 @@ class OrderManager:
             products,
             total_price,
         )
-
         self.orders.append(order)
-
         return order
 
     # 다음 주문 번호
@@ -100,12 +97,10 @@ class OrderManager:
         if not order_items:
             print("주문 상품 없음")
             return
-
         for i, item in enumerate(order_items, 1):
             product = item["product"]
             quantity = item["quantity"]
             options = item["options"]
-
             print(f"{i}. {product.name}\n   수량: {quantity}")
             print("   옵션:", ", ".join(options) if options else "없음")
         print("====================")

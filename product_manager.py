@@ -42,15 +42,7 @@ class ProductManager:
     def save_products(self, filename):
         with open(filename, "w", encoding="utf-8-sig", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(
-                [
-                    "name",
-                    "price",
-                    "category",
-                    "sold_out",
-                    "options",
-                ]
-            )
+            writer.writerow(["name", "price", "category", "sold_out", "options"])
             for product in self.products:
                 options_text = []
                 for option_name, option_price in product.options.items():
