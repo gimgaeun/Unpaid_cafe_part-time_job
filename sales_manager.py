@@ -41,6 +41,15 @@ class SalesManager:
             total += sale.total_price
         return total
 
+    # 1건 매출 금액 계산
+    def calculate_product_price(self, product):
+        quantity = product["quantity"]
+        price = product["price"] or 0
+        option_price = 0
+        for option in product["options"]:
+            option_price += option["price"]
+        return (price + option_price) * quantity
+
     # 매출 내역 출력
     def show_sales(self):
         print("\n-매출 내역-")
@@ -111,11 +120,7 @@ class SalesManager:
             for product in sale.products:
                 name = product["name"]
                 quantity = product["quantity"]
-                price = product["price"] or 0
-                option_price = 0
-                for option in product["options"]:
-                    option_price += option["price"]
-                item_price = (price + option_price) * quantity
+                item_price = self.calculate_product_price(product)
                 if name not in product_sales:
                     product_sales[name] = {"quantity": 0, "sales": 0}
                 product_sales[name]["quantity"] += quantity
@@ -146,16 +151,11 @@ class SalesManager:
                     continue
                 category = product_categories[name]
                 quantity = product["quantity"]
-                price = product["price"] or 0
-                option_price = 0
-                for option in product["options"]:
-                    option_price += option["price"]
-                item_price = (price + option_price) * quantity
+                item_price = self.calculate_product_price(product)
                 if category not in category_sales:
                     category_sales[category] = {"quantity": 0, "sales": 0}
                 category_sales[category]["quantity"] += quantity
                 category_sales[category]["sales"] += item_price
-
         print(f"조회 기간 : {start_date} ~ {end_date}")
         if not category_sales:
             print("해당 기간 매출 없음")
