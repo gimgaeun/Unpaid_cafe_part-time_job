@@ -9,7 +9,7 @@ class PaymentManager:
     def calculate_item_price(self, product, options, quantity):
         option_price = 0
         for option in options:
-            option_price += product.options[option]
+            option_price += product.options.get(option, 0)
         return (product.price + option_price) * quantity
 
     # 전체 주문 금액 계산
@@ -35,6 +35,28 @@ class PaymentManager:
         print("현금 결제 완료")
         print(f"거스름돈 : {self.change}원")
         return True
+
+    # 현금 투입 및 추가 투입
+    def collect_cash(self, total_price):
+        self.total_price = total_price
+        self.payment_method = "cash"
+        accumulated_money = 0
+        while True:
+            try:
+                add_money = int(input("투입할 현금 금액 (0: 결제 취소) : ").strip())
+                if add_money == 0:
+                    print("결제 취소")
+                    return False
+                if add_money < 0:
+                    print("금액은 0 이상 입력")
+                    continue
+            except ValueError:
+                print("금액은 숫자로 입력")
+                continue
+            accumulated_money += add_money
+            if self.process_cash(accumulated_money):
+                return True
+            print("부족한 금액을 추가로 투입")
 
     # 카드 결제
     def process_card(self):

@@ -75,7 +75,7 @@ class ProductManager:
         if product is None:
             print("상품을 찾을 수 없음")
             return
-        return Product
+        return product
 
     # 상품 추가
     def add_products(self):
@@ -86,6 +86,9 @@ class ProductManager:
             return
         if any(p.name == name for p in self.products):
             print("이미 존재하는 상품")
+            return
+        if "," in name:
+            print("상품명에 쉼표 포함할 수 없음")
             return
         try:
             price = int(input("가격을 입력 : ").strip())
@@ -129,6 +132,9 @@ class ProductManager:
             return
         if self.find_product(new_name) is not None:
             print("이미 존재하는 상품명입니다.")
+            return
+        if "," in new_name:
+            print("상품명에 쉼표 포함할 수 없음")
             return
         product.name = new_name
         print(f"{old_name}이 {new_name}으로 변경")
