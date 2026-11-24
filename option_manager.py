@@ -1,3 +1,7 @@
+ICY_ONLY_CATEGORIES = {"스무디/주스", "프라페", "에이드"}
+NO_TEMP_CATEGORIES = {"디저트"}
+
+
 class OptionManager:
     def __init__(self):
         self.selected_options = []
@@ -5,18 +9,25 @@ class OptionManager:
     # 옵션 선택
     def select_option(self, product):
         self.selected_options = []
+        temp = self.select_temp(product)
+        if temp is not None:
+            product.options.setdefault(temp, 0)
+            self.selected_options.append(temp)
         if not product.options:
             print("옵션이 존재하지 않음")
             return self.selected_options
         print(f"\n-{product.name} 옵션 선택-")
-        option_names = list(product.options.keys())
+        option_names = [
+            name for name in product.options.keys() if name not in ("HOT", "ICE")
+        ]
+        if not option_names:
+            return self.selected_options
         for i, option_name in enumerate(option_names, 1):
             print(f"({i}. {option_name} + {product.options[option_name]}원)")
         print("0. 선택 완료")
         while True:
             try:
                 choice = int(input("추가할 옵션 번호 선택 : ").strip())
-
                 if choice < 0 or choice > len(option_names):
                     print("올바른 번호 입력")
                     continue
@@ -88,3 +99,28 @@ class OptionManager:
                 return
             except ValueError:
                 print("숫자를 입력")
+
+    # 온도 선택이 필요한 경우
+    def need_temp(self, product):
+        category = (getattr(product, "category", "") or "").strip()
+        return category not in NO_TEMP_CATEGORIES
+
+    # only ice인 경우
+    def only_ice(self, product):
+        category = (getattr(product, "category", "") or "").strip()
+        return category in ICY_ONLY_CATEGORIES
+
+    # 온도 선택
+    def select_temp(self, product):
+        if not self.need_temp(product):
+            return None
+        if self.only_ice(product):
+            print("해당 카테고리는 ICE만 선택 가능")
+            return "ICE"
+        while True:
+            choice = input("온도 선택 (1.HOT, 2:ICE) : ").strip()
+            if choice == "1":
+                return "HOT"
+            if choice == "2":
+                return "ICE"
+            print("1 또는 2 입력")

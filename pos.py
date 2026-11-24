@@ -57,7 +57,7 @@ class Pos:
         self.signal_manager.init_signal()
         signal_thread = threading.Thread(
             target=self.signal_manager.check_signal,
-            args=(self.refresh_products,),
+            args=(self.refresh_orders,),
             kwargs={"interval": 0.7},
             daemon=True,
         )

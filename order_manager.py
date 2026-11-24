@@ -7,7 +7,6 @@ class OrderManager:
     def __init__(self):
         self.orders = []
         self.current_order_date = None
-        self.next_order_id = 1
 
     @staticmethod
     def extract_date_str(order_time):
@@ -96,7 +95,6 @@ class OrderManager:
                         max_today_id = order.order_id
         next_id = max_today_id + 1
         self.current_order_date = target_date
-        self.next_order_id = next_id + 1
         return next_id
 
     # 주문 수량 제한
